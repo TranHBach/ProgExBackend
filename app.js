@@ -1,17 +1,25 @@
-require("dotenv").config();
-
 const express = require("express");
 const app = express();
-const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user");
-const supabaseJS = require("@supabase/supabase-js");
+const writerRoutes = require("./routes/writer");
+const supabase = require("./utils/createClient");
 
-const supabaseUrl = "https://zbpccdtnrjflweuxdzst.supabase.co";
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = supabaseJS.createClient(supabaseUrl, supabaseKey);
+app.use((req, res, next) => {
+  res.set({
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, PUT, PATCH, DELETE",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  });
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
-console.log(supabase)
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/user", userRoutes);
+app.use("/writer", writerRoutes);
+
 app.listen(3000);
