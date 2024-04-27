@@ -1,11 +1,66 @@
 const path = require("path");
 const express = require("express");
+const { body } = require("express-validator");
+const supabase = require("../utils/createClient");
 const router = express.Router();
 const userController = require("../controllers/user");
 
 // // /admin/add-product => GET
 router.post("/example", userController.example);
 
-router.post("/register", userController.register);
+router.post(
+  "/register",
+  [
+    body("Email", "Please enter a valid email")
+      .exists()
+      .withMessage("Email must not be empty")
+      .isEmail()
+      .custom((value, { req }) => {
+        const email = req.body.Email;
+        return supabase
+          .from("Users")
+          .select()
+          .eq("Email", email)
+          .limit(1)
+          .then((data) => {
+            if (data.data.length > 0) {
+              return Promise.reject("Email already exists");
+            }
+          });
+      })
+      .normalizeEmail()
+      .trim(),
+
+    body("Password")
+      .exists()
+      .isLength({ min: 1, max: 26 })
+      .withMessage("Password must be longer than 1")
+      .isAlphanumeric()
+      .withMessage("Password must have both character and letter")
+      .trim(),
+
+    body("confirmPassword")
+      .exists()
+      .custom((value, { req }) => {
+        if (value !== req.body.Password) {
+          throw new Error("Password have to match");
+        }
+        return true;
+      })
+      .trim(),
+
+    body("FirstName")
+      .exists()
+      .withMessage("First Name must not be empty")
+      .trim(),
+
+    body("LastName").exists().withMessage("Last Name must not be empty").trim(),
+
+    body("Username").exists().withMessage("Username must not be empty").trim(),
+  ],
+  userController.register
+);
+
+router.post("/login", [], userController.login)
 
 module.exports = router;
