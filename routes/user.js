@@ -72,8 +72,6 @@ router.post(
 
 router.post("/logout", userController.logout);
 
-router.post("/init", userController.init);
-
 router.post("/search-recipe", userController.searchRecipe);
 
 module.exports = router;

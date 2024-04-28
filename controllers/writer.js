@@ -19,6 +19,7 @@ exports.addBanking = async (req, res, next) => {
   return res.status(200).json({ message: true });
 };
 
+// Changed again but not tested yet
 exports.addArticle = async (req, res, next) => {
   const {
     UserID,
@@ -29,7 +30,12 @@ exports.addArticle = async (req, res, next) => {
     Duration,
     Serving,
     Image,
+    IngredientID,
+    Quantity,
+    Style,
+    Flavour,
   } = req.body;
+  IngredientID.sort();
   const { data, error } = await supabase.from("Articles").insert([
     {
       UserID,
@@ -40,6 +46,10 @@ exports.addArticle = async (req, res, next) => {
       Duration,
       Serving,
       Image,
+      IngredientID,
+      Quantity,
+      Style,
+      Flavour,
     },
   ]);
   if (error) {

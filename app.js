@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const userRoutes = require("./routes/user");
 const writerRoutes = require("./routes/writer");
+const initRoutes = require("./routes/init");
 const supabase = require("./utils/createClient");
 const flash = require("connect-flash");
 const session = require("express-session");
@@ -25,7 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-
+app.use("/", initRoutes);
 app.use("/user", userRoutes);
 app.use("/writer", writerRoutes);
 
