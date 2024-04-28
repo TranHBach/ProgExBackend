@@ -61,6 +61,19 @@ router.post(
   userController.register
 );
 
-router.post("/login", [], userController.login)
+router.post(
+  "/login",
+  [
+    body("Username").exists().withMessage("Username must not be empty").trim(),
+    body("Password").exists().withMessage("Password must not be empty").trim(),
+  ],
+  userController.login
+);
+
+router.post("/logout", userController.logout);
+
+router.post("/init", userController.init);
+
+router.post("/search-recipe", userController.searchRecipe);
 
 module.exports = router;

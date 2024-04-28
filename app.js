@@ -3,6 +3,11 @@ const app = express();
 const userRoutes = require("./routes/user");
 const writerRoutes = require("./routes/writer");
 const supabase = require("./utils/createClient");
+const flash = require("connect-flash");
+const session = require("express-session");
+const csrf = require("csurf");
+const csrfProtection = csrf();
+const cookieParser = require("cookie-parser");
 
 app.use((req, res, next) => {
   res.set({
@@ -18,6 +23,8 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser());
+
 
 app.use("/user", userRoutes);
 app.use("/writer", writerRoutes);
