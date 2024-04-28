@@ -109,7 +109,7 @@ exports.searchRecipe = async (req, res, next) => {
     // Filter based on minimal ingredients
     case "1":
       supabase
-        .from("Articles_duplicate")
+        .from("Articles")
         .select()
         .contains("Flavour", flavour)
         .contains("Style", style)
@@ -158,7 +158,7 @@ exports.searchRecipe = async (req, res, next) => {
     // Filter based on vote
     case "2":
       supabase
-        .from("Articles_duplicate")
+        .from("Articles")
         .select()
         .contains("Flavour", flavour)
         .contains("Style", style)
@@ -178,7 +178,7 @@ exports.searchRecipe = async (req, res, next) => {
     // Filter based on duration
     case "3":
       supabase
-        .from("Articles_duplicate")
+        .from("Articles")
         .select()
         .contains("Flavour", flavour)
         .contains("Style", style)
@@ -202,7 +202,7 @@ exports.searchRecipe = async (req, res, next) => {
         return res.status(422).json({ message: "No serving input" });
       }
       supabase
-        .from("Articles_duplicate")
+        .from("Articles")
         .select()
         .eq("Serving", serving)
         .contains("Flavour", flavour)
