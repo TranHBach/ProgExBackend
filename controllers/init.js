@@ -1,3 +1,7 @@
+const jwt = require("jsonwebtoken");
+const jwtSecret = require("../utils/jwtSecret");
+const supabase = require("../utils/createClient");
+
 exports.init = (req, res, next) => {
   const token = req.cookies.jwt;
   if (!token) {
@@ -28,4 +32,30 @@ exports.init = (req, res, next) => {
   });
 };
 
-exports.getEverything = async (req, res, next) => {};
+exports.getEverything = async (req, res, next) => {
+  try {
+    const { data: styles, error: stylesError } = await supabase
+      .from("Style")
+      .select("*");
+
+    const { data: ingredients, error: ingredientsError } = await supabase
+      .from("Ingredients")
+      .select("*");
+
+    const { data: flavours, error: flavoursError } = await supabase
+      .from("Flavour")
+      .select("*");
+
+    if (stylesError || ingredientsError || flavoursError) {
+      console.error("Error:", stylesError || ingredientsError || flavoursError);
+      return res.status(500).json({ success: false, error: "Server error" });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, data: { styles, ingredients, flavours } });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};

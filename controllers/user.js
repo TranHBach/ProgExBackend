@@ -1,9 +1,8 @@
 const supabase = require("../utils/createClient");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-const jwtSecret = "seriuhgwo85ghwo8ty3n8vtyo5tywo8tvw3n8tywn38v57vywt";
-const maxAge = 3 * 60 * 60;
+const jwtSecret = require("../utils/jwtSecret");
+const maxAge = 30 * 24 * 60 * 60;
 
 const { validationResult } = require("express-validator");
 
@@ -15,7 +14,13 @@ exports.example = async (req, res, next) => {
   //     message: "something wrong",
   //   });
   // }
-  console.log(req.session);
+  const token = req.cookies.jwt;
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+
+  console.log(val);
   return res.status(200).json({ hi: "ok" });
 };
 
@@ -34,16 +39,30 @@ exports.register = async (req, res, next) => {
   bcrypt
     .hash(Password, 12)
     .then((hashedPassword) => {
-      return supabase.from("Users").insert({
-        Email: Email,
-        Password: hashedPassword,
-        FirstName: FirstName,
-        LastName: LastName,
-        Username: Username,
-      });
-    })
-    .then((result) => {
-      return res.status(200).json({ status: "ok" });
+      supabase
+        .from("Users")
+        .insert({
+          Email: Email,
+          Password: hashedPassword,
+          FirstName: FirstName,
+          LastName: LastName,
+          Username: Username,
+        })
+        .select()
+        .then((result) => {
+          const returnedUser = result.data[0];
+          const token = jwt.sign(
+            {
+              UserID: returnedUser.UserID,
+              Password: hashedPassword,
+              Username: Username,
+            },
+            jwtSecret,
+            { expiresIn: maxAge }
+          );
+          res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+          return res.status(200).json({ ...returnedUser, token: token });
+        });
     })
     .catch((err) => {
       console.log(err);
@@ -73,7 +92,7 @@ exports.login = async (req, res, next) => {
         if (doMatch) {
           const token = jwt.sign(
             {
-              UserID: result.UserID,
+              UserID: returnedUser.UserID,
               Password: hashedPassword,
               Username,
             },
@@ -95,6 +114,10 @@ exports.logout = (req, res, next) => {
 
 // Tested but may need to change later to make more sense
 exports.searchRecipe = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(422).json({ validationErrors: error.array() });
+  }
   const { filterType, ingredientList } = req.body;
   let flavour = ["0"];
   if (req.body.flavour) {
@@ -222,4 +245,96 @@ exports.searchRecipe = async (req, res, next) => {
     default:
       return res.status(422).json({ message: "No such filter" });
   }
+};
+
+exports.updateUserInfo = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: error.array() });
+  }
+
+  const token = req.cookies.jwt;
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+  const UserID = val.UserID;
+  const { FirstName, LastName, Email } = req.body;
+  const { error } = await supabase
+    .from("Users")
+    .update({ FirstName, LastName, Email })
+    .eq("UserID", UserID);
+
+  if (error) {
+    return res.status(500).json({ success: false, error: "Database error" });
+  }
+  return res.status(200).json({ message: true });
+};
+
+exports.updatePassword = async (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+  const UserID = val.UserID;
+  const { oldPassword, newPassword, confirmNewPassword } = req.body;
+  supabase
+    .from("Users")
+    .select()
+    .eq("UserID", UserID)
+    .limit(1)
+    .then((result) => {
+      if (result.data.length == 0) {
+        return res.status(422).json({ message: "User not found" });
+      }
+      const returnedUser = result.data[0];
+      const hashedPassword = returnedUser.Password;
+      bcrypt.compare(oldPassword, hashedPassword).then((doMatch) => {
+        if (doMatch) {
+          bcrypt
+            .hash(newPassword, 12)
+            .then((newHashedPassword) => {
+              const token = jwt.sign(
+                {
+                  UserID: UserID,
+                  Password: newHashedPassword,
+                  Username: returnedUser.Username,
+                },
+                jwtSecret,
+                { expiresIn: maxAge }
+              );
+              supabase
+                .from("Users")
+                .update({
+                  Password: newHashedPassword,
+                })
+                .eq("UserID", UserID)
+                .then((response) => {
+                  res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+                  return res
+                    .status(200)
+                    .json({ ...returnedUser, token: token });
+                });
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else {
+          return res.status(422).json({ message: "Incorrect Password" });
+        }
+      });
+    });
+};
+
+exports.getOneArticle = async (req, res, next) => {
+  const ArticleID = req.body.ArticleID;
+  const { data, err } = await supabase
+    .from("Articles")
+    .select()
+    .eq("ArticleID", ArticleID);
+  if (err) {
+    return res.status(422).json({ message: "Database error" });
+  }
+  return res.status(200).json(data);
 };
