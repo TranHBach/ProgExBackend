@@ -106,8 +106,8 @@ exports.getArticleFromUserID = async (req, res, next) => {
   const UserID = val.UserID;
   try {
     const { data: articlesData, error: articlesError } = await supabase
-      .from("writes")
-      .select("ArticleID, Articles(*)")
+      .from("Articles")
+      .select()
       .eq("UserID", UserID);
 
     if (articlesError) {

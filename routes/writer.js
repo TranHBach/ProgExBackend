@@ -102,6 +102,8 @@ router.post(
   writerController.updateArticle
 );
 
+router.post("/get-writer-article", writerController.getArticleFromUserID);
+
 router.post("/get-royalties", writerController.getRoyalties);
 
 module.exports = router;
