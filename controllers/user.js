@@ -193,8 +193,9 @@ exports.searchRecipe = async (req, res, next) => {
           if (err) {
             console.log(err);
             return res.status(422).json({ message: "Something went wrong" });
+          } else {
+            return res.status(200).json(allArticleID);
           }
-          return res.status(200).json(allArticleID);
         });
 
       break;
@@ -250,7 +251,7 @@ exports.searchRecipe = async (req, res, next) => {
 exports.updateUserInfo = async (req, res, next) => {
   const validateErr = validationResult(req);
   if (!validateErr.isEmpty()) {
-    return res.status(422).json({ validationErrors: error.array() });
+    return res.status(422).json({ validationErrors: validateErr.array() });
   }
 
   const token = req.cookies.jwt;
