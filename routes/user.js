@@ -134,8 +134,10 @@ router.post(
   userController.updatePassword
 );
 
-router.post("/get-one-article", [
-  body("ArticleID").exists().withMessage("ArticleID must not be empty"),
-]);
+router.post(
+  "/get-one-article",
+  [body("ArticleID").exists().withMessage("ArticleID must not be empty")],
+  userController.getOneArticle
+);
 
 module.exports = router;
