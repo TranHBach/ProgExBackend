@@ -13,6 +13,7 @@ router.post(
     body("Content").exists().withMessage("Content must not be empty"),
     body("Duration").exists().withMessage("Duration must not be empty"),
     body("Serving").exists().withMessage("Serving must not be empty"),
+    body("Description").exists().withMessage("Description must not be empty"),
     body("IngredientID")
       .exists()
       .withMessage("IngredientID must not be empty")
@@ -78,6 +79,7 @@ router.post(
     body("Content").exists().withMessage("Content must not be empty"),
     body("Duration").exists().withMessage("Duration must not be empty"),
     body("Serving").exists().withMessage("Serving must not be empty"),
+    body("Description").exists().withMessage("Description must not be empty"),
     body("IngredientID")
       .exists()
       .withMessage("IngredientID must not be empty")
