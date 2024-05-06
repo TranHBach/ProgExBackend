@@ -62,6 +62,10 @@ exports.register = async (req, res, next) => {
           );
           res.cookie("jwt", token, { maxAge: maxAge * 1000 });
           return res.status(200).json({ ...returnedUser, token: token });
+        })
+        .catch((err) => {
+          console.log(err);
+          return res.status(422).json({ message: "error" });
         });
     })
     .catch((err) => {
@@ -119,11 +123,11 @@ exports.searchRecipe = async (req, res, next) => {
     return res.status(422).json({ validationErrors: error.array() });
   }
   const { filterType, ingredientList } = req.body;
-  let flavour = ["0"];
+  let flavour = [0];
   if (req.body.flavour) {
     flavour = req.body.flavour;
   }
-  let style = ["0"];
+  let style = [0];
   if (req.body.style) {
     style = req.body.style;
   }
@@ -178,6 +182,7 @@ exports.searchRecipe = async (req, res, next) => {
           });
           return res.status(200).json(allArticleID);
         });
+      break;
     // Filter based on vote
     case "2":
       supabase

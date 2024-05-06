@@ -51,12 +51,33 @@ router.post(
 
     body("FirstName")
       .exists()
+      .isLength({ min: 1 })
       .withMessage("First Name must not be empty")
       .trim(),
 
-    body("LastName").exists().withMessage("Last Name must not be empty").trim(),
+    body("LastName")
+      .exists()
+      .isLength({ min: 1 })
+      .withMessage("Last name must not be empty")
+      .trim(),
 
-    body("Username").exists().withMessage("Username must not be empty").trim(),
+    body("Username")
+      .exists()
+      .withMessage("Username must not be empty")
+      .custom((value, { req }) => {
+        const Username = req.body.Username;
+        return supabase
+          .from("Users")
+          .select()
+          .eq("Username", Username)
+          .limit(1)
+          .then((data) => {
+            if (data.data.length > 0) {
+              return Promise.reject("Username already exists");
+            }
+          });
+      })
+      .trim(),
   ],
   userController.register
 );
@@ -77,13 +98,13 @@ router.post(
   [
     body("ingredientList")
       .exists()
-      .withMessage("ingredientList must not be empty")
+      .withMessage("Ingredient must not be empty")
       .isArray()
       .withMessage("ingredientList must be an array"),
 
     body("filterType")
       .exists()
-      .withMessage("filterType must not be empty")
+      .withMessage("Filter type must not be empty")
       .isNumeric()
       .withMessage("filterType must be an integer"),
   ],
@@ -114,10 +135,15 @@ router.post(
       .trim(),
     body("FirstName")
       .exists()
+      .isLength({ min: 1 })
       .withMessage("First Name must not be empty")
       .trim(),
 
-    body("LastName").exists().withMessage("Last Name must not be empty").trim(),
+    body("LastName")
+      .exists()
+      .isLength({ min: 1 })
+      .withMessage("Last Name must not be empty")
+      .trim(),
   ],
   userController.updateUserInfo
 );
@@ -126,7 +152,16 @@ router.post(
   "/update-password",
   [
     body("oldPassword").exists().withMessage("Old password must not be empty"),
-    body("newPassword").exists().withMessage("New Password must not be empty"),
+    body("newPassword")
+      .exists()
+      .withMessage("New Password must not be empty")
+      .custom((value, { req }) => {
+        const newPassword = req.body.newPassword;
+        const oldPassword = req.body.oldPassword;
+        if (newPassword == oldPassword) {
+          return Promise.reject("New password must not be the same as old password");
+        }
+      }),
     body("confirmNewPassword")
       .exists()
       .withMessage("Passwords must be matched"),

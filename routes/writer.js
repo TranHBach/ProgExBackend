@@ -16,7 +16,7 @@ router.post(
     body("Description").exists().withMessage("Description must not be empty"),
     body("IngredientID")
       .exists()
-      .withMessage("IngredientID must not be empty")
+      .withMessage("Ingredient must not be empty")
       .isArray()
       .withMessage("IngredientID must be an array"),
     body("Quantity")
