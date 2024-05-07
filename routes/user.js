@@ -160,6 +160,17 @@ router.post(
 );
 
 router.post(
+  "/update-username",
+  [
+    body("Username")
+      .exists()
+      .isLength({ min: 1 })
+      .withMessage("Username must not be empty"),
+  ],
+  userController.updateUsername
+);
+
+router.post(
   "/get-one-article",
   [body("ArticleID").exists().withMessage("ArticleID must not be empty")],
   userController.getOneArticle

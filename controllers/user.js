@@ -333,6 +333,30 @@ exports.updatePassword = async (req, res, next) => {
     });
 };
 
+exports.updateUsername = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+
+  const token = req.cookies.jwt;
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+  const UserID = val.UserID;
+  const { Username } = req.body;
+  const { error } = await supabase
+    .from("Users")
+    .update({ Username })
+    .eq("UserID", UserID);
+
+  if (error) {
+    return res.status(500).json({ success: false, error: "Database error" });
+  }
+  return res.status(200).json({ message: true });
+};
+
 exports.getOneArticle = async (req, res, next) => {
   const ArticleID = req.body.ArticleID;
   const { data, err } = await supabase
