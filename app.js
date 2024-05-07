@@ -3,6 +3,8 @@ const fs = require("fs");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
+const cors = require("cors");
+const session = require("express-session");
 const userRoutes = require("./routes/user");
 const writerRoutes = require("./routes/writer");
 const initRoutes = require("./routes/init");
@@ -14,14 +16,26 @@ app.use(fileUpload());
 app.use(express.static("public"));
 
 app.use((req, res, next) => {
-  res.set({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS, GET, POST, PUT, PATCH, DELETE",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  });
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
+  res.append('Access-Control-Allow-Origin', ['*']);
+  res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.append('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+
+app.use(
+  cors({
+    origin: "http://localhost:3006",
+    credentials: true,
+  })
+);
+
+app.use(function (req, res, next) {
+  res.header("Content-Type", "application/json;charset=UTF-8");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
   next();
 });
 
