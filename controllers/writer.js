@@ -11,7 +11,7 @@ exports.addBanking = async (req, res, next) => {
   }
   let val = jwt.verify(token, jwtSecret);
   const UserID = val.UserID;
-  console.log()
+  console.log();
   const { BankNumber, BankName, AccountHolder } = req.body;
   if (!/^\d+$/.test(BankNumber)) {
     return res
@@ -88,6 +88,7 @@ exports.addArticle = async (req, res, next) => {
 
 exports.uploadImage = async (req, res, next) => {
   const imageDataBuffer = req.files.image.data;
+  const purpose = req.body.purpose;
   new Promise((resolve) => {
     cloudinary.uploader
       .upload_stream((error, uploadResult) => {
@@ -95,7 +96,27 @@ exports.uploadImage = async (req, res, next) => {
       })
       .end(imageDataBuffer);
   }).then((uploadResult) => {
-    return res.status(200).json({ url: uploadResult.secure_url });
+    if (purpose == 2) {
+      const token = req.cookies.jwt;
+      if (!token) {
+        return res.status(300).json({ message: "Token not found" });
+      }
+      let val = jwt.verify(token, jwtSecret);
+      const UserID = val.UserID;
+      supabase
+        .from("Users")
+        .update({ProfileImg: uploadResult.secure_url})
+        .eq("UserID", UserID)
+        .then((response) => {
+          if (response.error) {
+              return res.status(422).json(response.error);
+          }
+          console.log(UserID);
+          return res.status(200).json({ url: uploadResult.secure_url });
+        });
+    } else {
+      return res.status(200).json({ url: uploadResult.secure_url });
+    }
   });
 };
 
