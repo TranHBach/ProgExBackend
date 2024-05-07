@@ -118,19 +118,7 @@ router.post(
       .exists()
       .withMessage("Email must not be empty")
       .isEmail()
-      .custom((value, { req }) => {
-        const email = req.body.Email;
-        return supabase
-          .from("Users")
-          .select()
-          .eq("Email", email)
-          .limit(1)
-          .then((data) => {
-            if (data.data.length > 0) {
-              return Promise.reject("Email already exists");
-            }
-          });
-      })
+      .withMessage("Must be a valid email")
       .normalizeEmail()
       .trim(),
     body("FirstName")
@@ -159,7 +147,9 @@ router.post(
         const newPassword = req.body.newPassword;
         const oldPassword = req.body.oldPassword;
         if (newPassword == oldPassword) {
-          return Promise.reject("New password must not be the same as old password");
+          return Promise.reject(
+            "New password must not be the same as old password"
+          );
         }
       }),
     body("confirmNewPassword")
