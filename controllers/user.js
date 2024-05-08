@@ -1,7 +1,9 @@
+require("dotenv").config();
 const supabase = require("../utils/createClient");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const jwtSecret = require("../utils/jwtSecret");
+const nodemailer = require("nodemailer");
 const maxAge = 30 * 24 * 60 * 60;
 
 const { validationResult } = require("express-validator");
@@ -367,4 +369,112 @@ exports.getOneArticle = async (req, res, next) => {
     return res.status(422).json({ message: "Database error" });
   }
   return res.status(200).json(data);
+};
+
+exports.resetPassword = async (req, res, next) => {
+  const { Email } = req.body;
+  const OTP = Math.floor(100000 + Math.random() * 900000);
+  supabase
+    .from("OTP")
+    .upsert({ Email, OTP })
+    .then((response) => {
+      if (response.error) {
+        return res.status(422).json(response.error);
+      } else {
+        var transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          send: true,
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD,
+          },
+        });
+
+        var mailOptions = {
+          from: "ragoza0932447933@gmail.com",
+          to: "ragoza12345@gmail.com",
+          subject: "Your OTP ",
+          text: "That was easy!",
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+            return res.status(200).json({ message: "Please check your email" });
+          }
+        });
+      }
+    });
+};
+
+exports.checkOTP = async (req, res, next) => {};
+
+exports.likeArticle = async (req, res, next) => {
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+  const UserID = val.UserID;
+
+  const { ArticleID } = req.body;
+  try {
+    const { data: likeData, error: likeError } = await supabase
+      .from("likes")
+      .select("ArticleID")
+      .eq("UserID", UserID)
+      .eq("ArticleID", ArticleID);
+
+    if (likeError) {
+      console.error("Error checking like:", likeError);
+      return res.status(500).json({ success: false, error: "Server error" });
+    }
+
+    if (likeData.length > 0) {
+      return res
+        .status(400)
+        .json({ success: false, error: "User already liked this article" });
+    }
+
+    const { data, error } = await supabase
+      .from("likes")
+      .insert([{ UserID, ArticleID }]);
+
+    if (error != null) {
+      console.error("Error like:", error);
+      return res.status(500).json({ success: false, error: "Can not like" });
+    }
+
+    const { data: articleData, error: articleError } = await supabase
+      .from("Articles")
+      .select("TotalVote")
+      .eq("ArticleID", ArticleID)
+      .single();
+
+    if (articleError) {
+      console.error("Error getting article:", articleError);
+      return res.status(500).json({ success: false, error: "Server error" });
+    }
+
+    const newTotalVote = articleData.TotalVote + 1;
+
+    const { data: updateData, error: updateError } = await supabase
+      .from("Articles")
+      .update({ TotalVote: newTotalVote })
+      .eq("ArticleID", ArticleID);
+
+    if (updateError) {
+      console.error("Cannot update:", updateError);
+      return res.status(500).json({ success: false, error: "Server error" });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Article liked successfully" });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
 };

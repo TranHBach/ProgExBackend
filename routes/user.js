@@ -176,4 +176,38 @@ router.post(
   userController.getOneArticle
 );
 
+router.post(
+  "/like-article",
+  [body("ArticleID").exists().withMessage("ArticleID must not be empty")],
+  userController.likeArticle
+);
+
+router.post(
+  "/reset-password",
+  [
+    body("Email", "Please enter a valid email")
+      .exists()
+      .withMessage("Email must not be empty")
+      .isEmail()
+      .custom((value, { req }) => {
+        const email = req.body.Email;
+        return supabase
+          .from("Users")
+          .select()
+          .eq("Email", email)
+          .limit(1)
+          .then((data) => {
+            if (data.data.length == 0) {
+              return Promise.reject("Email does not exists");
+            }
+          });
+      })
+      .normalizeEmail()
+      .trim(),
+  ],
+  userController.resetPassword
+);
+
+router.post("/check-otp" ,userController.checkOTP);
+
 module.exports = router;
