@@ -183,7 +183,7 @@ router.post(
 );
 
 router.post(
-  "/reset-password",
+  "/send-otp",
   [
     body("Email", "Please enter a valid email")
       .exists()
@@ -205,9 +205,31 @@ router.post(
       .normalizeEmail()
       .trim(),
   ],
-  userController.resetPassword
+  userController.sendOTP
 );
 
-router.post("/check-otp" ,userController.checkOTP);
+router.post(
+  "/reset-password",
+  [
+    body("Password")
+      .exists()
+      .isLength({ min: 1, max: 26 })
+      .withMessage("Password must be longer than 1")
+      .isAlphanumeric()
+      .withMessage("Password must have both character and letter")
+      .trim(),
+
+    body("confirmPassword")
+      .exists()
+      .custom((value, { req }) => {
+        if (value !== req.body.Password) {
+          throw new Error("Password have to match");
+        }
+        return true;
+      })
+      .trim(),
+  ],
+  userController.resetPassword
+);
 
 module.exports = router;

@@ -371,7 +371,12 @@ exports.getOneArticle = async (req, res, next) => {
   return res.status(200).json(data);
 };
 
-exports.resetPassword = async (req, res, next) => {
+exports.sendOTP = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+
   const { Email } = req.body;
   const OTP = Math.floor(100000 + Math.random() * 900000);
   supabase
@@ -387,15 +392,15 @@ exports.resetPassword = async (req, res, next) => {
           send: true,
           auth: {
             user: process.env.EMAIL,
-            pass: process.env.PASSWORD,
+            pass: process.env.APP_PASS,
           },
         });
 
         var mailOptions = {
-          from: "ragoza0932447933@gmail.com",
-          to: "ragoza12345@gmail.com",
-          subject: "Your OTP ",
-          text: "That was easy!",
+          from: "Tran Huu Bach",
+          to: Email,
+          subject: `OTP Code`,
+          text: `Your OTP is ${OTP}`,
         };
 
         transporter.sendMail(mailOptions, function (error, info) {
@@ -410,7 +415,42 @@ exports.resetPassword = async (req, res, next) => {
     });
 };
 
-exports.checkOTP = async (req, res, next) => {};
+exports.resetPassword = async (req, res, next) => {
+  const { OTP, Email, Password } = req.body;
+  supabase
+    .from("OTP")
+    .select()
+    .eq("Email", Email)
+    .eq("OTP", OTP)
+    .then((result) => {
+      if (result.count == 0) {
+        return res.status(200).json({ message: "Wrong OTP" });
+      } else {
+        bcrypt
+          .hash(Password, 12)
+          .then((hashedPassword) => {
+            supabase
+              .from("Users")
+              .update({
+                Password: hashedPassword,
+              })
+              .eq("Email", Email)
+              .then((result) => {
+                return res
+                  .status(200)
+                  .json({ message: "Password has successfully changed." });
+              })
+              .catch((err) => {
+                console.log(err);
+                return res.status(422).json({ message: "error" });
+              });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    });
+};
 
 exports.likeArticle = async (req, res, next) => {
   if (!token) {
