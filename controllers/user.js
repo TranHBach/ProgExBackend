@@ -360,6 +360,11 @@ exports.updateUsername = async (req, res, next) => {
 };
 
 exports.getOneArticle = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+
   const ArticleID = req.body.ArticleID;
   const { data, err } = await supabase
     .from("Articles")
@@ -416,6 +421,11 @@ exports.sendOTP = async (req, res, next) => {
 };
 
 exports.resetPassword = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+
   const { OTP, Email, Password } = req.body;
   supabase
     .from("OTP")
@@ -453,6 +463,11 @@ exports.resetPassword = async (req, res, next) => {
 };
 
 exports.likeArticle = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+  const token = req.cookies.jwt;
   if (!token) {
     return res.status(300).json({ message: "Token not found" });
   }
