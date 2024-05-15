@@ -108,4 +108,6 @@ router.post("/get-writer-article", writerController.getArticleFromUserID);
 
 router.post("/get-royalties", writerController.getRoyalties);
 
+router.post("/get-bankinfo", writerController.getBankinfo)
+
 module.exports = router;

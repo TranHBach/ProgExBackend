@@ -105,11 +105,11 @@ exports.uploadImage = async (req, res, next) => {
       const UserID = val.UserID;
       supabase
         .from("Users")
-        .update({ProfileImg: uploadResult.secure_url})
+        .update({ ProfileImg: uploadResult.secure_url })
         .eq("UserID", UserID)
         .then((response) => {
           if (response.error) {
-              return res.status(422).json(response.error);
+            return res.status(422).json(response.error);
           }
           console.log(UserID);
           return res.status(200).json({ url: uploadResult.secure_url });
@@ -228,6 +228,24 @@ exports.getRoyalties = async (req, res, next) => {
   const UserID = val.UserID;
   const { data, err } = await supabase
     .from("WriterTransaction")
+    .select()
+    .eq("UserID", UserID);
+
+  if (err) {
+    return res.status(422).json({ message: "Database error" });
+  }
+  return res.status(200).json(data);
+};
+
+exports.getBankinfo = async (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+  const UserID = val.UserID;
+  const { data, err } = await supabase
+    .from("Writers")
     .select()
     .eq("UserID", UserID);
 
