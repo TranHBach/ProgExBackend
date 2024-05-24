@@ -161,7 +161,7 @@ exports.updateBankInfo = async (req, res, next) => {
   if (error) {
     return res.status(500).json({ success: false, error: "Database error" });
   }
-  return res.status(200).json({ message: true });
+  return res.status(200).json({ message: "Update bank successfully" });
 };
 
 exports.updateArticle = async (req, res, next) => {

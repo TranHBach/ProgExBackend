@@ -232,4 +232,6 @@ router.post(
   userController.resetPassword
 );
 
+router.post("/get-liked-article", userController.getLikedArticle)
+
 module.exports = router;

@@ -533,3 +533,20 @@ exports.likeArticle = async (req, res, next) => {
     return res.status(500).json({ success: false, error: "Server error" });
   }
 };
+
+exports.getLikedArticle = async (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (!token) {
+    return res.status(300).json({ message: "Token not found" });
+  }
+  let val = jwt.verify(token, jwtSecret);
+  const UserID = val.UserID;
+  const { data, error } = await supabase
+    .from("likes")
+    .select()
+    .eq("UserID", UserID);
+  if (error) {
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+  return res.status(200).json(data);
+};
