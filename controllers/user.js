@@ -543,10 +543,20 @@ exports.getLikedArticle = async (req, res, next) => {
   const UserID = val.UserID;
   const { data, error } = await supabase
     .from("likes")
-    .select()
+    .select("ArticleID")
     .eq("UserID", UserID);
-  if (error) {
+
+  const IDList = [];
+  for (let each of data) {
+    IDList.push(each.ArticleID);
+  }
+
+  const { data: likedData, error: likedError } = await supabase
+    .from("Articles")
+    .select()
+    .in("ArticleID", IDList);
+  if (error || likedError) {
     return res.status(500).json({ success: false, error: "Server error" });
   }
-  return res.status(200).json(data);
+  return res.status(200).json(likedData);
 };
