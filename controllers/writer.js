@@ -197,7 +197,6 @@ exports.updateArticle = async (req, res, next) => {
     .from("Articles")
     .update([
       {
-        ArticleID,
         Title,
         TotalVote,
         Content,
@@ -211,7 +210,8 @@ exports.updateArticle = async (req, res, next) => {
         Flavour,
       },
     ])
-    .eq("UserID", UserID);
+    .eq("UserID", UserID)
+    .eq("ArticleID", ArticleID);
   if (error) {
     console.error("error", error);
     return res.status(500).json({ success: false, error: "Server error" });
