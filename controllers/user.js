@@ -4,8 +4,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const jwtSecret = require("../utils/jwtSecret");
 const nodemailer = require("nodemailer");
+const fetch = require("node-fetch");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const maxAge = 30 * 24 * 60 * 60;
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 const { validationResult } = require("express-validator");
 
 exports.example = async (req, res, next) => {
@@ -559,4 +562,113 @@ exports.getLikedArticle = async (req, res, next) => {
     return res.status(500).json({ success: false, error: "Server error" });
   }
   return res.status(200).json(likedData);
+};
+
+exports.chatAI = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+  const { IngredientID, Style, Flavour } = req.body;
+  const { data: ingredientName, error: ingreError } = await supabase
+    .from("Ingredients")
+    .select("IngredientName")
+    .in("IngredientID", IngredientID);
+
+  const { data: styleName, error: styleError } = await supabase
+    .from("Style")
+    .select("StyleName")
+    .in("id", Style);
+
+  const { data: flavourName, error: flavorError } = await supabase
+    .from("Flavour")
+    .select("Flavour")
+    .in("FlavourID", Flavour);
+
+  // Access your API key as an environment variable (see "Set up your API key" above)
+
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  let ingredientString = "";
+  for (let ingredient of ingredientName) {
+    ingredientString += ingredient.IngredientName + ", ";
+  }
+  ingredientString = ingredientString.substring(0, ingredientString.length - 2);
+  let styleString = "any";
+  if (styleName && styleName.length > 0) {
+    styleString = "";
+    for (let style of styleName) {
+      styleString += style.StyleName + ", ";
+    }
+    styleString = styleString.substring(0, styleString.length - 2);
+  }
+  let flavourString = "any";
+  if (flavourName && flavourName.length > 0) {
+    flavourString = "";
+    for (let flavour of flavourName) {
+      flavourString += flavour.Flavour + ", ";
+    }
+    flavourString = flavourString.substring(0, flavourString.length - 2);
+  }
+  const prompt = `I have these ingredients: ${ingredientString}. I want to make a dish with ${styleString} style that has ${flavourString} flavour`;
+  const result = await model.generateContent(prompt);
+  const response = result.response;
+  const text = response.text();
+  const { data, error } = await supabase
+    .from("AIChat")
+    .insert({ prompt: [prompt], response: [text] })
+    .select();
+  if (error || ingreError || flavorError || styleError) {
+    return res.status(422).json({ message: "Database error" });
+  }
+  return res.status(200).json({ response: text, chatID: data[0].id });
+};
+
+exports.continueChat = async (req, res, next) => {
+  const validateErr = validationResult(req);
+  if (!validateErr.isEmpty()) {
+    return res.status(422).json({ validationErrors: validateErr.array() });
+  }
+  const { chatID, prompt } = req.body;
+  const { data, error } = await supabase
+    .from("AIChat")
+    .select()
+    .eq("id", chatID)
+    .limit(1)
+    .single();
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const chatHistory = [
+    {
+      role: "user",
+      parts: [],
+    },
+    {
+      role: "model",
+      parts: [],
+    },
+  ];
+  for (let i in data.prompt) {
+    const previousPrompt = data.prompt[i];
+    const previousResponse = data.response[i];
+    chatHistory[0].parts.push({ text: previousPrompt });
+    chatHistory[1].parts.push({ text: previousResponse });
+  }
+  const chat = model.startChat({
+    history: chatHistory,
+    generationConfig: {
+      maxOutputTokens: 10000,
+    },
+  });
+  const result = await chat.sendMessage(prompt);
+  data.prompt.push(prompt);
+  data.response.push(result.response.text());
+  const { error: updateErr } = await supabase
+    .from("AIChat")
+    .update(data)
+    .eq("id", data.id);
+  if (error || updateErr) {
+    return res.status(422).json({ message: "Database error" });
+  }
+  return res
+    .status(200)
+    .json({ response: result.response.text(), chatID: data.id });
 };

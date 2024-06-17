@@ -232,6 +232,37 @@ router.post(
   userController.resetPassword
 );
 
-router.post("/get-liked-article", userController.getLikedArticle)
+router.post("/get-liked-article", userController.getLikedArticle);
+
+router.post(
+  "/chat-ai",
+  [
+    body("IngredientID")
+      .exists()
+      .withMessage("IngredientID must not be empty")
+      .isArray()
+      .withMessage("IngredientID must be an array"),
+    body("Style")
+      .exists()
+      .withMessage("Style must not be empty")
+      .isArray()
+      .withMessage("Style must be an array"),
+    body("Flavour")
+      .exists()
+      .withMessage("Flavour must not be empty")
+      .isArray()
+      .withMessage("Flavour must be an array"),
+  ],
+  userController.chatAI
+);
+
+router.post(
+  "/continue-chat",
+  [
+    body("chatID").exists().withMessage("chatID must not be empty"),
+    body("prompt").exists().withMessage("prompt must not be empty"),
+  ],
+  userController.continueChat
+);
 
 module.exports = router;
