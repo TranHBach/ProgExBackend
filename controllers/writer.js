@@ -55,9 +55,11 @@ exports.addArticle = async (req, res, next) => {
     Quantity,
     Style,
     Flavour,
+    Course
   } = req.body;
   Style = [0, ...Style];
   Flavour = [0, ...Flavour];
+  Course = [0, ...Course];
   IngredientID.sort();
   if (IngredientID.length != Quantity.length) {
     return res
@@ -77,6 +79,7 @@ exports.addArticle = async (req, res, next) => {
       Quantity,
       Style,
       Flavour,
+      Course
     },
   ]);
   if (error) {
@@ -184,9 +187,11 @@ exports.updateArticle = async (req, res, next) => {
     Quantity,
     Style,
     Flavour,
+    Course
   } = req.body;
   Style = [0, ...Style];
   Flavour = [0, ...Flavour];
+  Course = [0, ...Course];
   IngredientID.sort();
   if (IngredientID.length != Quantity.length) {
     return res
@@ -208,6 +213,7 @@ exports.updateArticle = async (req, res, next) => {
         Quantity,
         Style,
         Flavour,
+        Course
       },
     ])
     .eq("UserID", UserID)

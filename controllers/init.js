@@ -46,14 +46,18 @@ exports.getEverything = async (req, res, next) => {
       .from("Flavour")
       .select("*");
 
-    if (stylesError || ingredientsError || flavoursError) {
-      console.error("Error:", stylesError || ingredientsError || flavoursError);
+    const { data: course, error: courseError } = await supabase
+      .from("Course")
+      .select("*");
+
+    if (stylesError || ingredientsError || flavoursError || courseError) {
+      console.error("Error:", stylesError || ingredientsError || flavoursError || courseError);
       return res.status(500).json({ success: false, error: "Server error" });
     }
 
     return res
       .status(200)
-      .json({ success: true, data: { styles, ingredients, flavours } });
+      .json({ success: true, data: { styles, ingredients, flavours, course } });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ success: false, error: "Server error" });

@@ -136,6 +136,10 @@ exports.searchRecipe = async (req, res, next) => {
   if (req.body.style) {
     style = req.body.style;
   }
+  let course = [0];
+  if (req.body.course) {
+    course = req.body.course;
+  }
   ingredientList.sort();
   switch (filterType) {
     // Filter based on minimal ingredients
@@ -145,6 +149,7 @@ exports.searchRecipe = async (req, res, next) => {
         .select()
         .contains("Flavour", flavour)
         .contains("Style", style)
+        .contains("Course", course)
         .overlaps("IngredientID", ingredientList)
         .order("TotalVote", { ascending: false })
         .then((response) => {
@@ -195,6 +200,7 @@ exports.searchRecipe = async (req, res, next) => {
         .select()
         .contains("Flavour", flavour)
         .contains("Style", style)
+        .contains("Course", course)
         .overlaps("IngredientID", ingredientList)
         .order("TotalVote", { ascending: false })
         .then((response) => {
@@ -216,6 +222,7 @@ exports.searchRecipe = async (req, res, next) => {
         .select()
         .contains("Flavour", flavour)
         .contains("Style", style)
+        .contains("Course", course)
         .overlaps("IngredientID", ingredientList)
         .order("Duration", { ascending: true })
         .order("TotalVote", { ascending: false })
@@ -241,6 +248,7 @@ exports.searchRecipe = async (req, res, next) => {
         .eq("Serving", serving)
         .contains("Flavour", flavour)
         .contains("Style", style)
+        .contains("Course", course)
         .overlaps("IngredientID", ingredientList)
         .order("TotalVote", { ascending: false })
         .then((response) => {
@@ -564,6 +572,7 @@ exports.getLikedArticle = async (req, res, next) => {
   return res.status(200).json(likedData);
 };
 
+// Currently not usable
 exports.chatAI = async (req, res, next) => {
   const validateErr = validationResult(req);
   if (!validateErr.isEmpty()) {
