@@ -65,7 +65,12 @@ exports.register = async (req, res, next) => {
             jwtSecret,
             { expiresIn: maxAge }
           );
-          res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+          res.cookie("jwt", token, {
+            maxAge: maxAge * 1000,
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+          });
           return res.status(200).json({ ...returnedUser, token: token });
         })
         .catch((err) => {
@@ -108,7 +113,12 @@ exports.login = async (req, res, next) => {
             jwtSecret,
             { expiresIn: maxAge }
           );
-          res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+          res.cookie("jwt", token, {
+            maxAge: maxAge * 1000,
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+          });
           return res.status(200).json({ ...returnedUser, token: token });
         }
         return res.status(422).json({ message: "Incorrect Password" });
@@ -330,7 +340,12 @@ exports.updatePassword = async (req, res, next) => {
                 })
                 .eq("UserID", UserID)
                 .then((response) => {
-                  res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+                  res.cookie("jwt", token, {
+                    maxAge: maxAge * 1000,
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                  });
                   return res
                     .status(200)
                     .json({ ...returnedUser, token: token });
