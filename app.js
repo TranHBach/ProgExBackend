@@ -25,7 +25,7 @@ app.use(express.static("public"));
 
 app.use(
   cors({
-    origin: "http://localhost:3006",
+    origin: "https://cooking123.netlify.app",
     credentials: true,
     allowedHeaders: "Content-Type",
     methods: "GET, POST, PATCH, PUT, DELETE, OPTIONS"
