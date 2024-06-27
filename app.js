@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: "https://cooking123.netlify.app/",
+    origin: "https://cooking123.netlify.app",
     credentials: true,
   })
 );
