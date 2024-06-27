@@ -15,17 +15,20 @@ const app = express();
 app.use(fileUpload());
 app.use(express.static("public"));
 
-app.use((req, res, next) => {
-  res.append("Access-Control-Allow-Origin", ["https://cooking123.netlify.app"]);
-  res.append("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
-  res.append("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.append("Access-Control-Allow-Origin", ["*"]);
+//   res.append("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+//   res.append("Access-Control-Allow-Headers", "Content-Type");
+//   res.append("Access-Control-Allow-Credentials", true);
+//   next();
+// });
 
 app.use(
   cors({
     origin: "https://cooking123.netlify.app",
     credentials: true,
+    allowedHeaders: "Content-Type, attribution-reporting, run-ad-auction, join-ad-interest-group, compute-pressure, browsing-topics",
+    methods: "GET, POST, PATCH, PUT, DELETE, OPTIONS"
   })
 );
 
