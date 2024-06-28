@@ -129,7 +129,7 @@ exports.login = async (req, res, next) => {
 exports.logout = (req, res, next) => {
   res.clearCookie("jwt");
   // res.cookie("jwt", "", {maxAge: 0})
-  res.end();
+  // res.end();
   return res.status(200).json({ message: "Logged out" });
 };
 
