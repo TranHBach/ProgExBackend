@@ -127,7 +127,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.logout = (req, res, next) => {
-  request.session.destroy(() => {
+  req.session.destroy(() => {
     res.clearCookie("jwt");
     return res.end();
   })
