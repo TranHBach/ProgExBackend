@@ -8,4 +8,6 @@ router.post("/init", initController.init);
 
 router.post("/get-everything", initController.getEverything);
 
+router.post("/logout", initController.logout);
+
 module.exports = router;

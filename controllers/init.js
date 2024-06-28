@@ -63,3 +63,8 @@ exports.getEverything = async (req, res, next) => {
     return res.status(500).json({ success: false, error: "Server error" });
   }
 };
+
+exports.logout = (req, res, next) => {
+  res.setHeader('set-cookie', 'jwt=; max-age=0');
+  return res.status(200).json({ message: "Logged out" });
+};
