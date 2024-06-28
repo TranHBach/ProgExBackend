@@ -22,6 +22,17 @@ app.use(express.static("public"));
 //   res.append("Access-Control-Allow-Credentials", true);
 //   next();
 // });
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: false,
+    cookie: {
+      sameSite: "none",
+      secure: true
+    }
+  })
+);
 
 app.use(
   cors({
