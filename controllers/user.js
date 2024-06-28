@@ -127,7 +127,7 @@ exports.login = async (req, res, next) => {
 };
 
 exports.logout = (req, res, next) => {
-  res.setHeader('set-cookie', 'jwt=; max-age=0');
+  res.clearCookie();
   return res.status(200).json({ message: "Logged out" });
 };
 

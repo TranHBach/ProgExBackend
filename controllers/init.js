@@ -51,7 +51,10 @@ exports.getEverything = async (req, res, next) => {
       .select("*");
 
     if (stylesError || ingredientsError || flavoursError || courseError) {
-      console.error("Error:", stylesError || ingredientsError || flavoursError || courseError);
+      console.error(
+        "Error:",
+        stylesError || ingredientsError || flavoursError || courseError
+      );
       return res.status(500).json({ success: false, error: "Server error" });
     }
 
@@ -65,6 +68,11 @@ exports.getEverything = async (req, res, next) => {
 };
 
 exports.logout = (req, res, next) => {
-  res.setHeader('set-cookie', 'jwt=; max-age=0');
-  return res.status(200).json({ message: "Logged out" });
+  res.cookie("jwt", "", {
+    maxAge: 0,
+    httpOnly: true,
+    secure: true,
+    overwrite: true,
+    sameSite: "none",
+  });  return res.status(200).json({ message: "Logged out" });
 };
