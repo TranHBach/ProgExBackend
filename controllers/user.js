@@ -6,7 +6,7 @@ const jwtSecret = require("../utils/jwtSecret");
 const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const maxAge = 30 * 24 * 60 * 60;
+const maxAge = 3 * 60;
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 const { validationResult } = require("express-validator");
@@ -127,10 +127,10 @@ exports.login = async (req, res, next) => {
 };
 
 exports.logout = (req, res, next) => {
-  req.session.destroy(() => {
-    res.clearCookie("jwt");
-    return res.status(200).json({ message: "Logged out" });
-  })
+  // res.clearCookie("jwt");
+  res.setHeader('set-cookie', 'jwt=; max-age=0');
+  return res.status(200).json({ message: "Logged out" });
+
   // res.cookie("jwt", "", {maxAge: 0})
   // res.end();
 };
