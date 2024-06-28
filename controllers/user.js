@@ -6,7 +6,7 @@ const jwtSecret = require("../utils/jwtSecret");
 const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const maxAge = 3 * 60;
+const maxAge = 30 * 24 * 60 * 60;
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 const { validationResult } = require("express-validator");
